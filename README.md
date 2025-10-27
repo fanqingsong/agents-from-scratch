@@ -1,6 +1,94 @@
 # Agents From Scratch 
 
-The repo is a guide to building agents from scratch. It builds up to an ["ambient"](https://blog.langchain.dev/introducing-ambient-agents/) agent that can manage your email with connection to the Gmail API. It's grouped into 4 sections, each with a notebook and accompanying code in the `src/email_assistant` directory. These section build from the basics of agents, to agent evaluation, to human-in-the-loop, and finally to memory. These all come together in an agent that you can deploy, and the principles can be applied to other agents across a wide range of tasks. 
+The repo is a guide to building agents from scratch. It builds up to an ["ambient"](https://blog.langchain.dev/introducing-ambient-agents/) agent that can manage your email with connection to the Gmail API. It's grouped into 4 sections, each with a notebook and accompanying code in the `src/email_assistant` directory. These section build from the basics of agents, to agent evaluation, to human-in-the-loop, and finally to memory. These all come together in an agent that you can deploy, and the principles can be applied to other agents across a wide range of tasks.
+
+## 🚀 Quick Start with Docker
+
+This project can be run using Docker for a simplified setup experience.
+
+### Prerequisites
+
+- Docker and Docker Compose installed
+- Azure OpenAI credentials (see [Configuration](#configuration))
+
+### Quick Commands
+
+```bash
+# Start all services (Jupyter Notebook + LangGraph Dev Server)
+./run.sh start
+
+# Or start services individually
+./run.sh jupyter  # Only Jupyter Notebook
+./run.sh dev      # Only LangGraph Dev Server
+
+# View logs
+./run.sh logs
+
+# Stop services
+./run.sh stop
+
+# Restart services
+./run.sh restart
+
+# Enter container shell
+./run.sh shell
+
+# Run tests
+./run.sh test
+
+# Get help
+./run.sh help
+```
+
+### Available Services
+
+#### 1. Jupyter Notebook
+- **Access**: http://localhost:8888
+- **Purpose**: Development and exploration environment
+- **Features**: 
+  - Run and test all Agent implementations
+  - View and modify code
+  - Interactive development
+
+#### 2. LangGraph Dev Server
+- **API Documentation**: http://localhost:8123/docs (Recommended)
+- **Alternative Studio**: http://localhost:8123 (if tunnel is enabled)
+- **Purpose**: Visual debugging and development
+- **Features**:
+  - Visualize agent execution flow
+  - View agent states and intermediate results
+  - Debug agent behavior
+  - View runtime statistics and performance metrics
+
+**Note**: Due to browser security restrictions, the cloud-based LangGraph Studio (smith.langchain.com) may fail to connect to localhost. Use the API documentation at http://localhost:8123/docs instead, which provides full interactive capabilities.
+
+### Available Agents in LangGraph Studio
+
+- `langgraph101` - LangGraph basics example
+- `email_assistant` - Basic email assistant
+- `email_assistant_hitl` - Email assistant with human review
+- `email_assistant_hitl_memory` - Email assistant with memory and feedback learning
+- `email_assistant_hitl_memory_gmail` - Gmail integrated version
+- `cron` - Scheduled task agent
+
+### Configuration
+
+Edit the `.env` file to configure Azure OpenAI:
+
+```bash
+# Azure OpenAI Configuration
+AZURE_OPENAI_API_KEY=your_azure_openai_api_key_here
+AZURE_OPENAI_ENDPOINT=https://your-resource-name.openai.azure.com/
+AZURE_OPENAI_API_VERSION=2024-02-15-preview
+AZURE_OPENAI_DEPLOYMENT_NAME=your_deployment_name
+
+# LangSmith Configuration
+LANGSMITH_API_KEY=your_langsmith_api_key_here
+LANGSMITH_TRACING=false
+LANGSMITH_PROJECT=interrupt-workshop
+```
+
+For more details, see [AZURE_SETUP.md](AZURE_SETUP.md), [SERVICES.md](SERVICES.md), and [TROUBLESHOOTING.md](TROUBLESHOOTING.md). 
 
 ![overview](notebooks/img/overview.png)
 
@@ -170,5 +258,17 @@ Add [LangMem](https://langchain-ai.github.io/langmem/) to manage memories:
 * Manage a collection of background memories. 
 * Add memory tools that can look up facts in the background memories. 
 
+
+
+## TEST DATA
+
+{
+  "email_input": {
+    "author": "Alice Smith <alice.smith@company.com>",
+    "to": "Lance Martin <lance@company.com>",
+    "subject": "Quick question about API documentation",
+    "email_thread": "Hi Lance,\n\nI was reviewing the API documentation for the new authentication service and noticed a few endpoints seem to be missing from the specs. Could you help clarify if this was intentional or if we should update the docs?\n\nSpecifically, I'm looking at:\n- /auth/refresh\n- /auth/validate\n\nThanks!\nAlice"
+  }
+}
 
 

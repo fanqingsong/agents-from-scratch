@@ -122,11 +122,19 @@ def parse_email(email_input: dict) -> dict:
             - subject: Email subject line
             - email_thread: Full email content
     """
+    # Debug: print available keys
+    print(f"DEBUG parse_email: email_input keys = {list(email_input.keys())}")
+    print(f"DEBUG parse_email: email_input = {email_input}")
+    
+    # Handle nested email_input structure
+    if "email_input" in email_input:
+        email_input = email_input["email_input"]
+    
     return (
-        email_input["author"],
-        email_input["to"],
-        email_input["subject"],
-        email_input["email_thread"],
+        email_input.get("author", ""),
+        email_input.get("to", ""),
+        email_input.get("subject", ""),
+        email_input.get("email_thread", ""),
     )
 
 def parse_gmail(email_input: dict) -> tuple[str, str, str, str, str]:

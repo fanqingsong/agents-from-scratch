@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  test-runner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agents-test-runner
+    volumes:
+      - ./tests:/app/tests
+      - ./src:/app/src
+      - ./logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-interrupt-workshop}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    env_file:
+      - .env
+    command: >
+      sh -c "
+        echo 'Running Email Assistant Tests...' &&
+        uv run python tests/run_all_tests.py
+      "
+    networks:
+      - agents-network
+
+networks:
+  agents-network:
+    driver: bridge
+
+
+

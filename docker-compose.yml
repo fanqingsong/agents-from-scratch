@@ -1,0 +1,127 @@
+version: '3.8'
+
+services:
+  # Jupyter Notebook 服务 - 用于开发和探索
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agents-jupyter
+    ports:
+      - "8888:8888"  # Jupyter Notebook
+    volumes:
+      - ./notebooks:/app/notebooks
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./data:/app/data  # 用于存储数据
+      - ./logs:/app/logs  # 用于存储日志
+    environment:
+      - PYTHONPATH=/app
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-interrupt-workshop}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+      - GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}
+      # 添加标准环境变量名以兼容 LangChain
+      - OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - OPENAI_API_BASE=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_DEPLOYMENT=${AZURE_OPENAI_DEPLOYMENT_NAME}
+    env_file:
+      - .env
+    command: >
+      sh -c "
+        echo '🧪 Starting Jupyter Notebook...' &&
+        echo '📝 Jupyter Notebook: http://localhost:8888' &&
+        cd /app && .venv/bin/jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password='' --NotebookApp.allow_origin='*'
+      "
+    restart: unless-stopped
+    networks:
+      - agents-network
+
+  # LangGraph Dev Server - 用于调试和可视化
+  langgraph-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: agents-langgraph-dev
+    network_mode: host
+    volumes:
+      - ./langgraph.json:/app/langgraph.json
+      - ./src:/app/src
+      - ./notebooks:/app/notebooks
+      - ./tests:/app/tests
+      - ./data:/app/data
+      - ./logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+      - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
+      - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-interrupt-workshop}
+      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+      # 添加标准环境变量名以兼容 LangChain
+      - OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+      - OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+      - OPENAI_API_BASE=${AZURE_OPENAI_ENDPOINT}
+      - AZURE_OPENAI_DEPLOYMENT=${AZURE_OPENAI_DEPLOYMENT_NAME}
+    env_file:
+      - .env
+    command: >
+      sh -c "
+        echo '🚀 Starting LangGraph Dev Server...' &&
+        echo '📊 LangGraph Dev Server: http://localhost:8123' &&
+        cd /app &&
+        export PATH=\"/app/.venv/bin:\$PATH\" &&
+        export HOST=0.0.0.0 &&
+        /app/.venv/bin/langgraph dev --config langgraph.json --port 8123 --no-browser
+      "
+    restart: unless-stopped
+    profiles:
+      - dev  # 使用 profile 来控制是否启动
+
+  # 可选：添加 LangGraph Studio 服务
+  # 注意：由于镜像拉取问题，LangGraph Studio 暂不可用
+  # 如果需要使用，请手动安装或在容器内启动
+  # langgraph-studio:
+  #   image: langchain/langgraph-studio:latest
+  #   container_name: langgraph-studio
+  #   ports:
+  #     - "8000:8000"
+  #   volumes:
+  #     - ./langgraph.json:/app/langgraph.json
+  #     - ./src:/app/src
+  #     - ./.env:/app/.env
+  #   environment:
+  #     - LANGSMITH_API_KEY=${LANGSMITH_API_KEY}
+  #     - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
+  #     - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-interrupt-workshop}
+  #     - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
+  #     - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
+  #     - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION}
+  #     - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - email-assistant
+  #   restart: unless-stopped
+  #   networks:
+  #     - agents-network
+  #   profiles:
+  #     - studio  # 使用 profile 来控制是否启动
+
+networks:
+  agents-network:
+    driver: bridge
+
+volumes:
+  data:
+  logs:
+
+
+
